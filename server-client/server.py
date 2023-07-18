@@ -5,7 +5,7 @@ from Crypto.Util.number import long_to_bytes, bytes_to_long, getPrime
 
 FORMAT = 'utf-8'
 HEADER = 1024
-serverPort = 5051
+serverPort = 5056
 serverName = socket.gethostbyname(socket.gethostname())
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serverSocket.bind((serverName, serverPort))
@@ -24,13 +24,11 @@ def smallE(conn):
     print(e)
     print(n)
     print(ct)
-    print(1)
-    conn.send((str(e)).encode(FORMAT))
-    print(2)
-    conn.send((str(n)).encode(FORMAT))
-    print(3)
-    conn.send((str(ct)).encode(FORMAT))
-    print(4)
+    string = str(e) + "." + str(n) + "." + str(ct)
+    conn.send(string.encode(FORMAT))
+    #conn.send(((str(e)) + ".").encode(FORMAT))
+    #conn.send(((str(n)) + ".").encode(FORMAT))
+    #conn.send((str(ct)).encode(FORMAT))
 
 def hastad(conn):
     pass

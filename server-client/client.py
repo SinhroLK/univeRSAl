@@ -7,7 +7,7 @@ from gmpy2 import iroot
 
 FORMAT = 'utf-8'
 HEADER = 1024
-serverPort = 5051
+serverPort = 5056
 serverName = socket.gethostbyname(socket.gethostname())
 username = ''
 stop = False
@@ -31,15 +31,8 @@ def solver():
          """)
     while True:
         try:
-            print(1)
-            e = int(clientSocket.recv(HEADER).decode(FORMAT))
-            print(2)
-            print("E:", e)
-            n = int(clientSocket.recv(HEADER).decode(FORMAT))
-            print(n)
-            print(3)
-            ct = int(clientSocket.recv(HEADER).decode(FORMAT))
-            print(4)
+            rec = clientSocket.recv(HEADER).decode(FORMAT)
+            [e, n, ct] = rec.split(".")
             print(e)
             print(n)
             print(ct)
