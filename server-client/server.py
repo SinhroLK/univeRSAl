@@ -2,10 +2,11 @@ import socket
 import threading
 import random
 from Crypto.Util.number import long_to_bytes, bytes_to_long, getPrime
+from sentences import sentences
 
 FORMAT = 'utf-8'
 HEADER = 1024
-serverPort = 5056
+serverPort = 5055
 serverName = socket.gethostbyname(socket.gethostname())
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serverSocket.bind((serverName, serverPort))
@@ -13,22 +14,21 @@ serverSocket.listen()
 
 
 def smallE(conn):
-    print("Configuring Small E attack")
+    print("Configuring Small e attack")
     e = 3
     p = getPrime(512)
     q = getPrime(512)
     n = p * q
-    msg = bytes("Programski jezici", encoding=FORMAT)
+    msg = bytes(sentences[random.randint(0, 19)], encoding=FORMAT)
     pt = bytes_to_long(msg)
     ct = pow(pt, e, n)
-    print(e)
-    print(n)
-    print(ct)
+    print("Plaintext: ", pt)
+    print("Public exponent: ", e)
+    print("Modulus: ", n)
+    print("Ciphertext: ", ct)
     string = str(e) + "." + str(n) + "." + str(ct)
     conn.send(string.encode(FORMAT))
-    #conn.send(((str(e)) + ".").encode(FORMAT))
-    #conn.send(((str(n)) + ".").encode(FORMAT))
-    #conn.send((str(ct)).encode(FORMAT))
+
 
 def hastad(conn):
     pass
