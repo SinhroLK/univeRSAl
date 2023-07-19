@@ -5,8 +5,8 @@ from Crypto.Util.number import long_to_bytes, bytes_to_long, getPrime
 from sentences import sentences
 
 FORMAT = 'utf-8'
-HEADER = 1024
-serverPort = 5055
+HEADER = 100000
+serverPort = 5061
 serverName = socket.gethostbyname(socket.gethostname())
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serverSocket.bind((serverName, serverPort))
@@ -19,9 +19,10 @@ def smallE(conn):
     p = getPrime(512)
     q = getPrime(512)
     n = p * q
-    msg = bytes(sentences[random.randint(0, 19)], encoding=FORMAT)
-    pt = bytes_to_long(msg)
-    ct = pow(pt, e, n)
+    pt = sentences[random.randint(0, 19)]
+    msg = bytes(pt, encoding=FORMAT)
+    decr = bytes_to_long(msg)
+    ct = pow(decr, e, n)
     print("Plaintext: ", pt)
     print("Public exponent: ", e)
     print("Modulus: ", n)
@@ -31,8 +32,25 @@ def smallE(conn):
 
 
 def hastad(conn):
-    pass
-
+    print("Configuring Hastad attack")
+    e = random.randint(4, 20)
+    message = sentences[random.randint(0,19)]
+    n = []
+    ct = []
+    decr = bytes(message, encoding=FORMAT)
+    for i in range(e):
+        p = getPrime(1024)
+        q = getPrime(1024)
+        n.append(p * q)
+        ct.append(pow(bytes_to_long(decr), e, n[i]))
+    print("Plaintext: ", message)
+    print("Public exponent: ", e)
+    print("Modulus: ", n)
+    print("Ciphertext: ", ct)
+    string = str(e) + "."
+    for i in range(e):
+        string = string + str(n[i]) + "." + str(ct[i]) + "."
+    conn.send(string.encode(FORMAT))
 
 def commonModulus(conn):
     pass
