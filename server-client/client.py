@@ -30,7 +30,7 @@ print(r"""
 
 
 def smallE(known):
-    print("***************************************************************************************")
+    print("***************************************SMALL E***************************************")
     e = int(known.split(".")[0])
     n = int(known.split(".")[1])
     ct = int(known.split(".")[2])
@@ -41,7 +41,7 @@ def smallE(known):
 
 
 def hastad(known):
-    print("***************************************************************************************")
+    print("***************************************HASTAD***************************************")
     splitList = known.split(".")
     e = int(splitList[0])
     n = []
@@ -75,7 +75,7 @@ def hastad(known):
 
 
 def wiener(known):
-    print("***************************************************************************************")
+    print("***************************************WIENER***************************************")
     e = int(known.split(".")[0])
     n = int(known.split(".")[1])
     ct = int(known.split(".")[2])
@@ -93,8 +93,22 @@ def wiener(known):
         print(n)
 
 
-def solver():
+def sumOPrimes(known):
+    # sum = p + q && phi = (p-1)(q-1) = pq - p - q +1  = n - (p + q) + 1 ==> phi = n - sum + 1
+    print("***************************************SumOPrimes***************************************")
+    e = int(known.split(".")[0])
+    n = int(known.split(".")[1])
+    ct = int(known.split(".")[2])
+    sum = int(known.split(".")[3])
+    phi = n - sum + 1
+    d = pow(e, -1, phi)
+    print("Public exponent: ", e)
+    print("Modulus: ", n)
+    print("Ciphertext: ", ct)
+    print("Plaintext: ", long_to_bytes(pow(ct, d, n)).decode(FORMAT))
 
+
+def solver():
     while True:
         rec = clientSocket.recv(HEADER).decode(FORMAT)
         if int(rec.split(".")[0]) == 3:
@@ -103,6 +117,8 @@ def solver():
             hastad(rec)
         elif int(rec.split(".")[0]).bit_length() == int(rec.split(".")[1]).bit_length():
             wiener(rec)
+        elif len(rec.split(".")) == 4:
+            sumOPrimes(rec)
 
 
 try:

@@ -81,7 +81,22 @@ def wiener(conn):
 
 
 def sumOPrimes(conn):
-    pass
+    print("Configuring Sum O Primes")
+    e = 65537
+    p = getPrime(1024)
+    q = getPrime(1024)
+    n = p * q
+    sum = p + q
+    pt = sentences[random.randint(0,19)]
+    message = bytes(pt, encoding=FORMAT)
+    msg = bytes_to_long(message)
+    ct = pow(msg,e,n)
+    string = str(e) + "." + str(n) + "." + str(ct) + "." + str(sum)
+    print("Plaintext: ", message)
+    print("Public exponent: ", e)
+    print("Modulus: ", n)
+    print("Ciphertext: ", ct)
+    conn.send(string.encode(FORMAT))
 
 
 def configure(connection, addr):
