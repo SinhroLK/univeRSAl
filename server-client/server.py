@@ -6,7 +6,7 @@ from sentences import sentences
 
 FORMAT = 'utf-8'
 HEADER = 100000
-serverPort = 5061
+serverPort = 5060
 serverName = socket.gethostbyname(socket.gethostname())
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serverSocket.bind((serverName, serverPort))
@@ -16,8 +16,8 @@ serverSocket.listen()
 def smallE(conn):
     print("Configuring Small e attack")
     e = 3
-    p = getPrime(512)
-    q = getPrime(512)
+    p = getPrime(1024)
+    q = getPrime(1024)
     n = p * q
     pt = sentences[random.randint(0, 19)]
     msg = bytes(pt, encoding=FORMAT)
@@ -32,9 +32,9 @@ def smallE(conn):
 
 
 def hastad(conn):
-    print("Configuring Hastad attack")
+    print("Configuring Hastad's attack")
     e = random.randint(4, 20)
-    message = sentences[random.randint(0,19)]
+    message = sentences[random.randint(0, 19)]
     n = []
     ct = []
     decr = bytes(message, encoding=FORMAT)
@@ -52,15 +52,35 @@ def hastad(conn):
         string = string + str(n[i]) + "." + str(ct[i]) + "."
     conn.send(string.encode(FORMAT))
 
+
 def commonModulus(conn):
     pass
 
 
 def wiener(conn):
-    pass
+    print("Configuring Wiener's attack")
+    p = getPrime(512)
+    q = getPrime(512)
+    n = p * q
+    phi = (p - 1) * (q - 1)
+    while True:
+        d = getPrime(256)
+        e = pow(d, -1, phi)
+        if e.bit_length() >= n.bit_length():
+            break
+    pt = sentences[random.randint(0, 19)]
+    message = bytes(pt, encoding=FORMAT)
+    msg = bytes_to_long(message)
+    ct = pow(msg, e, n)
+    string = str(e) + "." + str(n) + "." + str(ct)
+    print("Plaintext: ", msg)
+    print("Public exponent: ", e)
+    print("Modulus: ", n)
+    print("Ciphertext: ", ct)
+    conn.send(string.encode(FORMAT))
 
 
-def boneh(conn):
+def sumOPrimes(conn):
     pass
 
 
@@ -96,7 +116,7 @@ def configure(connection, addr):
         print("2. Hastad broadcast attack")
         print("3. Common modulus attack")
         print("4. Wiener attack")
-        print("5. Boneh-Durfee Attack")
+        print("5. Sum O Primes")
         msg = input("Choose your desired configuration ")
         # msg = random.randint(1, 5)
         match msg:
@@ -109,7 +129,7 @@ def configure(connection, addr):
             case "4":
                 wiener(connection)
             case "5":
-                boneh(connection)
+                sumOPrimes(connection)
             case _:
                 print("Unknown configuration, please choose an existing one")
 
