@@ -59,8 +59,8 @@ def commonModulus(conn):
 
 def wiener(conn):
     print("Configuring Wiener's attack")
-    p = getPrime(512)
-    q = getPrime(512)
+    p = getPrime(1024)
+    q = getPrime(1024)
     n = p * q
     phi = (p - 1) * (q - 1)
     while True:
@@ -73,7 +73,7 @@ def wiener(conn):
     msg = bytes_to_long(message)
     ct = pow(msg, e, n)
     string = str(e) + "." + str(n) + "." + str(ct)
-    print("Plaintext: ", msg)
+    print("Plaintext: ", message)
     print("Public exponent: ", e)
     print("Modulus: ", n)
     print("Ciphertext: ", ct)
