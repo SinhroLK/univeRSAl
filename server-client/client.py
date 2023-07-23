@@ -1,9 +1,8 @@
 import owiener
 import threading
 import socket
-from Crypto.Util.number import long_to_bytes
-from gmpy2 import iroot, root
-from maths import chinese_remainder_theorem
+from Crypto.Util.number import GCD, long_to_bytes
+from gmpy2 import iroot, invert
 from factordb.factordb import FactorDB
 
 FORMAT = 'utf-8'
@@ -29,7 +28,7 @@ print(r"""
          """)
 
 
-def smallE(known):
+def smallE(known: str) -> None:
     print("***************************************SMALL E***************************************")
     e = int(known.split(".")[0])
     n = int(known.split(".")[1])
@@ -40,13 +39,55 @@ def smallE(known):
     print("Plaintext: ", long_to_bytes(iroot(ct, e)[0]).decode(FORMAT))
 
 
-def hastad(known):
+###########################################################################
+def crt(ct: list, m: list) -> int:
+    try:
+        assert len(ct) == len(m)
+    except:
+        print("[+] Length of ct should be equal to length of m")
+        return -1
+    for i in range(len(m)):
+        for j in range(len(m)):
+            if GCD(m[i], m[j]) != 1 and i != j:
+                print("[+] Input not pairwise co-prime")
+                return -1
+
+    M = 1
+    for i in m:
+        M *= i
+    list_b = [M//i for i in m]
+    assert len(list_b) == len(m)
+    try:
+        list_b_inv = [int(invert(list_b[i], m[i])) for i in range(len(m))]
+    except:
+        print("[+] Encountered an unusual error while calculating inverse using gmpy2.invert()")
+        return -1
+    x = 0
+    for i in range(len(m)):
+        x += ct[i]*list_b[i]*list_b_inv[i]
+    return x % M
+
+
+def hastad_unpadded(ct_list: list, mod_list: list, e: int) -> bytes:
+    m_expo = crt(ct_list, mod_list)
+    if m_expo != -1:
+        eth_root = iroot(m_expo, e)
+        if not eth_root[1]:
+            return b"[+] Cannot calculate eth root!"
+        elif eth_root[1]:
+            return long_to_bytes(eth_root[0])
+    else:
+        return b"[+] Cannot calculate CRT"
+#########################################################################
+
+
+def hastad(known: str) -> None:
     print("***************************************HASTAD***************************************")
-    splitList = known.split(".")
+    splitList = known.split(".")[:-1]
     e = int(splitList[0])
     n = []
     ct = []
-    for i in range(1, len(splitList) - 1):
+    for i in range(1, len(splitList)):
         if i % 2 != 0:
             n.append(int(splitList[i]))
         else:
@@ -54,27 +95,11 @@ def hastad(known):
     print("Public exponent: ", e)
     print("Modulus: ", n)
     print("Ciphertext: ", ct)
-    """for i, j, k in combinations(range(e), 3):
-        C = chinese_remainder_theorem([(ct[i], n[i]), (ct[j], n[j]), (ct[k], n[k])])
-        try:
-            M = int(root(C, 3))
-        except ValueError:
-            pass
-        else:
-            print(long_to_bytes(M))"""
 
-    chineseList = []
-    for i in range(e):
-        chineseList.append((ct[i], n[i]))
-    C = chinese_remainder_theorem(chineseList)
-    try:
-        M = int(root(C, e))
-    except ValueError:
-        pass
-    print(long_to_bytes(M).decode(FORMAT))
+    print(hastad_unpadded(ct, n, e))
 
 
-def wiener(known):
+def wiener(known: str) -> None:
     print("***************************************WIENER***************************************")
     e = int(known.split(".")[0])
     n = int(known.split(".")[1])
@@ -93,7 +118,7 @@ def wiener(known):
         print(n)
 
 
-def sumOPrimes(known):
+def sumOPrimes(known: str) -> None:
     # sum = p + q && phi = (p-1)(q-1) = pq - p - q +1  = n - (p + q) + 1 ==> phi = n - sum + 1
     print("***************************************SumOPrimes***************************************")
     e = int(known.split(".")[0])

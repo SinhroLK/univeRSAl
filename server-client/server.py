@@ -13,7 +13,7 @@ serverSocket.bind((serverName, serverPort))
 serverSocket.listen()
 
 
-def smallE(conn):
+def smallE(conn: socket) -> None:
     print("Configuring Small e attack")
     e = 3
     p = getPrime(1024)
@@ -31,7 +31,7 @@ def smallE(conn):
     conn.send(string.encode(FORMAT))
 
 
-def hastad(conn):
+def hastad(conn: socket) -> None:
     print("Configuring Hastad's attack")
     e = random.randint(4, 20)
     message = sentences[random.randint(0, 19)]
@@ -53,7 +53,7 @@ def hastad(conn):
     conn.send(string.encode(FORMAT))
 
 
-def commonModulus(conn):
+def commonModulus(conn: socket) -> None:
     pass
 
 
@@ -80,17 +80,17 @@ def wiener(conn):
     conn.send(string.encode(FORMAT))
 
 
-def sumOPrimes(conn):
+def sumOPrimes(conn: socket) -> None:
     print("Configuring Sum O Primes")
     e = 65537
     p = getPrime(1024)
     q = getPrime(1024)
     n = p * q
     sum = p + q
-    pt = sentences[random.randint(0,19)]
+    pt = sentences[random.randint(0, 19)]
     message = bytes(pt, encoding=FORMAT)
     msg = bytes_to_long(message)
-    ct = pow(msg,e,n)
+    ct = pow(msg, e, n)
     string = str(e) + "." + str(n) + "." + str(ct) + "." + str(sum)
     print("Plaintext: ", message)
     print("Public exponent: ", e)
@@ -99,7 +99,7 @@ def sumOPrimes(conn):
     conn.send(string.encode(FORMAT))
 
 
-def configure(connection, addr):
+def configure(connection: socket, addr: str) -> None:
     print(f'New connection at {addr}')
     print(r"""                                          
      ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄                                      
