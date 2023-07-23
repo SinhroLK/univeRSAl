@@ -1,8 +1,9 @@
 import socket
 import threading
 import random
-from Crypto.Util.number import long_to_bytes, bytes_to_long, getPrime
+from Crypto.Util.number import bytes_to_long, getPrime
 from sentences import sentences
+from tqdm import tqdm
 
 FORMAT = 'utf-8'
 HEADER = 100000
@@ -16,13 +17,14 @@ serverSocket.listen()
 def smallE(conn: socket) -> None:
     print("Configuring Small e attack")
     e = 3
-    p = getPrime(1024)
-    q = getPrime(1024)
-    n = p * q
-    pt = sentences[random.randint(0, 19)]
-    msg = bytes(pt, encoding=FORMAT)
-    decr = bytes_to_long(msg)
-    ct = pow(decr, e, n)
+    for _ in tqdm(range(1), desc="Configuring"):
+        p = getPrime(1024)
+        q = getPrime(1024)
+        n = p * q
+        pt = sentences[random.randint(0, len(sentences)-1)]
+        msg = bytes(pt, encoding=FORMAT)
+        decr = bytes_to_long(msg)
+        ct = pow(decr, e, n)
     print("Plaintext: ", pt)
     print("Public exponent: ", e)
     print("Modulus: ", n)
@@ -33,17 +35,18 @@ def smallE(conn: socket) -> None:
 
 def hastad(conn: socket) -> None:
     print("Configuring Hastad's attack")
-    e = random.randint(4, 20)
-    message = sentences[random.randint(0, 19)]
+    eList = [2, 3, 5, 7, 11, 13, 17, 19]
+    e = eList[random.randint(0, len(eList)-1)]
+    pt = sentences[random.randint(0, len(sentences)-1)]
     n = []
     ct = []
-    decr = bytes(message, encoding=FORMAT)
-    for i in range(e):
+    message = bytes(pt, encoding=FORMAT)
+    for i in tqdm(range(e), desc="Configuring"):
         p = getPrime(1024)
         q = getPrime(1024)
         n.append(p * q)
-        ct.append(pow(bytes_to_long(decr), e, n[i]))
-    print("Plaintext: ", message)
+        ct.append(pow(bytes_to_long(message), e, n[i]))
+    print("Plaintext: ", pt)
     print("Public exponent: ", e)
     print("Modulus: ", n)
     print("Ciphertext: ", ct)
@@ -59,43 +62,45 @@ def commonModulus(conn: socket) -> None:
 
 def wiener(conn):
     print("Configuring Wiener's attack")
-    p = getPrime(1024)
-    q = getPrime(1024)
-    n = p * q
-    phi = (p - 1) * (q - 1)
-    while True:
-        d = getPrime(256)
-        e = pow(d, -1, phi)
-        if e.bit_length() >= n.bit_length():
-            break
-    pt = sentences[random.randint(0, 19)]
-    message = bytes(pt, encoding=FORMAT)
-    msg = bytes_to_long(message)
-    ct = pow(msg, e, n)
-    string = str(e) + "." + str(n) + "." + str(ct)
-    print("Plaintext: ", message)
+    for _ in tqdm(range(1), desc="Configuring"):
+        p = getPrime(1024)
+        q = getPrime(1024)
+        n = p * q
+        phi = (p - 1) * (q - 1)
+        while True:
+            d = getPrime(256)
+            e = pow(d, -1, phi)
+            if e.bit_length() >= n.bit_length():
+                break
+        pt = sentences[random.randint(0, len(sentences)-1)]
+        message = bytes(pt, encoding=FORMAT)
+        msg = bytes_to_long(message)
+        ct = pow(msg, e, n)
+    print("Plaintext: ", pt)
     print("Public exponent: ", e)
     print("Modulus: ", n)
     print("Ciphertext: ", ct)
+    string = str(e) + "." + str(n) + "." + str(ct)
     conn.send(string.encode(FORMAT))
 
 
 def sumOPrimes(conn: socket) -> None:
     print("Configuring Sum O Primes")
-    e = 65537
-    p = getPrime(1024)
-    q = getPrime(1024)
-    n = p * q
-    sum = p + q
-    pt = sentences[random.randint(0, 19)]
-    message = bytes(pt, encoding=FORMAT)
-    msg = bytes_to_long(message)
-    ct = pow(msg, e, n)
-    string = str(e) + "." + str(n) + "." + str(ct) + "." + str(sum)
-    print("Plaintext: ", message)
+    for _ in tqdm(range(1), desc="Configuring"):
+        e = 65537
+        p = getPrime(1024)
+        q = getPrime(1024)
+        n = p * q
+        sum = p + q
+        pt = sentences[random.randint(0, len(sentences)-1)]
+        message = bytes(pt, encoding=FORMAT)
+        msg = bytes_to_long(message)
+        ct = pow(msg, e, n)
+    print("Plaintext: ", pt)
     print("Public exponent: ", e)
     print("Modulus: ", n)
     print("Ciphertext: ", ct)
+    string = str(e) + "." + str(n) + "." + str(ct) + "." + str(sum)
     conn.send(string.encode(FORMAT))
 
 

@@ -20,5 +20,3 @@ sentences = [
     "The sound of waves crashing on the shore is soothing",
     "The rustling of pages invites us into a story",
 ]
-
-
