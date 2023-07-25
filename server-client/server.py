@@ -1,7 +1,7 @@
 import socket
 import threading
 import random
-from Crypto.Util.number import bytes_to_long, getPrime
+from Crypto.Util.number import bytes_to_long, getPrime, GCD
 from sentences import sentences
 from tqdm import tqdm
 
@@ -21,10 +21,10 @@ def smallE(conn: socket) -> None:
         p = getPrime(1024)
         q = getPrime(1024)
         n = p * q
-        pt = sentences[random.randint(0, len(sentences)-1)]
-        msg = bytes(pt, encoding=FORMAT)
-        decr = bytes_to_long(msg)
-        ct = pow(decr, e, n)
+        pt = sentences[random.randint(0, len(sentences) - 1)]
+        message = bytes(pt, encoding=FORMAT)
+        msg = bytes_to_long(message)
+        ct = pow(msg, e, n)
     print("Plaintext: ", pt)
     print("Public exponent: ", e)
     print("Modulus: ", n)
@@ -36,8 +36,8 @@ def smallE(conn: socket) -> None:
 def hastad(conn: socket) -> None:
     print("Configuring Hastad's attack")
     eList = [2, 3, 5, 7, 11, 13, 17, 19]
-    e = eList[random.randint(0, len(eList)-1)]
-    pt = sentences[random.randint(0, len(sentences)-1)]
+    e = eList[random.randint(0, len(eList) - 1)]
+    pt = sentences[random.randint(0, len(sentences) - 1)]
     n = []
     ct = []
     message = bytes(pt, encoding=FORMAT)
@@ -57,10 +57,31 @@ def hastad(conn: socket) -> None:
 
 
 def commonModulus(conn: socket) -> None:
-    pass
+    for i in tqdm(range(1), desc="Configuring"):
+        while True:
+            e1 = getPrime(32)
+            e2 = getPrime(32)
+            if GCD(e1, e2) == 1:
+                break
+        p = getPrime(1024)
+        q = getPrime(1024)
+        n = p * q
+        pt = sentences[random.randint(0, len(sentences) - 1)]
+        message = bytes(pt, encoding=FORMAT)
+        msg = bytes_to_long(message)
+        ct1 = pow(msg, e1, n)
+        ct2 = pow(msg, e2, n)
+    print("Plaintext: ", pt)
+    print("First Public exponent: ", e1)
+    print("Second Public exponent: ", e2)
+    print("First Modulus: ", n)
+    print("First Ciphertext: ", ct1)
+    print("Second Ciphertext: ", ct1)
+    string = str(e1) + "." + str(e2) + "." + str(n) + "." + str(ct1) + "." + str(ct2)
+    conn.send(string.encode(FORMAT))
 
 
-def wiener(conn):
+def wiener(conn: socket) -> None:
     print("Configuring Wiener's attack")
     for _ in tqdm(range(1), desc="Configuring"):
         p = getPrime(1024)
@@ -72,7 +93,7 @@ def wiener(conn):
             e = pow(d, -1, phi)
             if e.bit_length() >= n.bit_length():
                 break
-        pt = sentences[random.randint(0, len(sentences)-1)]
+        pt = sentences[random.randint(0, len(sentences) - 1)]
         message = bytes(pt, encoding=FORMAT)
         msg = bytes_to_long(message)
         ct = pow(msg, e, n)
@@ -92,7 +113,7 @@ def sumOPrimes(conn: socket) -> None:
         q = getPrime(1024)
         n = p * q
         sum = p + q
-        pt = sentences[random.randint(0, len(sentences)-1)]
+        pt = sentences[random.randint(0, len(sentences) - 1)]
         message = bytes(pt, encoding=FORMAT)
         msg = bytes_to_long(message)
         ct = pow(msg, e, n)

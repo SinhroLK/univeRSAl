@@ -39,3 +39,12 @@ def hastad_unpadded(ct_list: list, mod_list: list, e: int) -> bytes:
             return long_to_bytes(eth_root[0])
     else:
         return b"[+] Cannot calculate CRT"
+
+
+
+def extended_gcd(a, b):
+    if a % b:
+        u, v, d = extended_gcd(b, a % b)
+        return v, (d - a * v) // b, d
+
+    return 0, 1, b
