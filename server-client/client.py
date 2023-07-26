@@ -101,7 +101,7 @@ def commonModulus(known: str) -> None:
     print("Second Public exponent: ", e2)
     print("Modulus: ", n)
     print("First Ciphertext: ", ct1)
-    print("Second Ciphertext: ", ct1)
+    print("Second Ciphertext: ", ct2)
     print("Plaintext: ", long_to_bytes(pt).decode(FORMAT))
 
 

@@ -1,3 +1,3 @@
-# RSA-CTF-Solver
+# univeRSAl
 
-An app that recognizes which of the more common attacks on rsa algorithm to use, and solves the challenge.
+An app that recognizes which of the more common attacks on RSA algorithm to use, and solves the challenge.
