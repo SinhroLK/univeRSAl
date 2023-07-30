@@ -2,9 +2,10 @@ import socket
 import threading
 import random
 from Crypto.Util.number import bytes_to_long, getPrime, GCD
-from sentences import sentences
 from tqdm import tqdm
+from sentences import sentences
 
+# server configuration
 FORMAT = 'utf-8'
 HEADER = 100000
 serverPort = 5060
@@ -17,6 +18,7 @@ serverSocket.listen()
 def smallE(conn: socket) -> None:
     print("Configuring Small e attack")
     e = 3
+    # generating small e attack data
     for _ in tqdm(range(1), desc="Configuring"):
         p = getPrime(1024)
         q = getPrime(1024)
@@ -29,18 +31,22 @@ def smallE(conn: socket) -> None:
     print("Public exponent: ", e)
     print("Modulus: ", n)
     print("Ciphertext: ", ct)
+    # sending data to the client
     string = str(e) + "." + str(n) + "." + str(ct)
     conn.send(string.encode(FORMAT))
 
 
 def hastad(conn: socket) -> None:
     print("Configuring Hastad's attack")
+    # generating e from a list of prime numbers
     eList = [2, 3, 5, 7, 11, 13, 17, 19]
     e = eList[random.randint(0, len(eList) - 1)]
+    # selecting a sentence to encrypt
     pt = sentences[random.randint(0, len(sentences) - 1)]
     n = []
     ct = []
     message = bytes(pt, encoding=FORMAT)
+    # generating e different n, and calculating ct for every n
     for i in tqdm(range(e), desc="Configuring"):
         p = getPrime(1024)
         q = getPrime(1024)
@@ -50,6 +56,7 @@ def hastad(conn: socket) -> None:
     print("Public exponent: ", e)
     print("Modulus: ", n)
     print("Ciphertext: ", ct)
+    # sending data to the client
     string = str(e) + "."
     for i in range(e):
         string = string + str(n[i]) + "." + str(ct[i]) + "."
@@ -57,6 +64,9 @@ def hastad(conn: socket) -> None:
 
 
 def commonModulus(conn: socket) -> None:
+    # configuring data for common modulus attack
+    # we need to public expoents, one modulus and one message to encrypt. By calculating everything we get to cts
+    print("Configuring Common modulus")
     for i in tqdm(range(1), desc="Configuring"):
         while True:
             e1 = getPrime(32)
@@ -77,12 +87,14 @@ def commonModulus(conn: socket) -> None:
     print("First Modulus: ", n)
     print("First Ciphertext: ", ct1)
     print("Second Ciphertext: ", ct2)
+    # sending data to the client
     string = str(e1) + "." + str(e2) + "." + str(n) + "." + str(ct1) + "." + str(ct2)
     conn.send(string.encode(FORMAT))
 
 
 def wiener(conn: socket) -> None:
     print("Configuring Wiener's attack")
+    # generating data for Wiener's attack
     for _ in tqdm(range(1), desc="Configuring"):
         p = getPrime(1024)
         q = getPrime(1024)
@@ -90,8 +102,8 @@ def wiener(conn: socket) -> None:
         phi = (p - 1) * (q - 1)
         while True:
             d = getPrime(256)
-            e = pow(d, -1, phi)
-            if e.bit_length() >= n.bit_length():
+            e = pow(d, -1, phi)  # calculating e as a modular inverse of d using Euler's totient
+            if e.bit_length() == n.bit_length():
                 break
         pt = sentences[random.randint(0, len(sentences) - 1)]
         message = bytes(pt, encoding=FORMAT)
@@ -101,18 +113,20 @@ def wiener(conn: socket) -> None:
     print("Public exponent: ", e)
     print("Modulus: ", n)
     print("Ciphertext: ", ct)
+    # sending data to the client
     string = str(e) + "." + str(n) + "." + str(ct)
     conn.send(string.encode(FORMAT))
 
 
 def sumOPrimes(conn: socket) -> None:
     print("Configuring Sum O Primes")
+    # generating data for SumOPrimes
     for _ in tqdm(range(1), desc="Configuring"):
         e = 65537
         p = getPrime(1024)
         q = getPrime(1024)
         n = p * q
-        sum = p + q
+        sum = p + q #calculating the sum of factors
         pt = sentences[random.randint(0, len(sentences) - 1)]
         message = bytes(pt, encoding=FORMAT)
         msg = bytes_to_long(message)
@@ -121,6 +135,7 @@ def sumOPrimes(conn: socket) -> None:
     print("Public exponent: ", e)
     print("Modulus: ", n)
     print("Ciphertext: ", ct)
+    # sending data to the client
     string = str(e) + "." + str(n) + "." + str(ct) + "." + str(sum)
     conn.send(string.encode(FORMAT))
 
@@ -128,30 +143,15 @@ def sumOPrimes(conn: socket) -> None:
 def configure(connection: socket, addr: str) -> None:
     print(f'New connection at {addr}')
     print(r"""                                          
-     ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄                                      
-    ▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌                                     
-    ▐░█▀▀▀▀▀▀▀█░▌▐░█▀▀▀▀▀▀▀▀▀ ▐░█▀▀▀▀▀▀▀█░▌                                     
-    ▐░▌       ▐░▌▐░▌          ▐░▌       ▐░▌                                     
-    ▐░█▄▄▄▄▄▄▄█░▌▐░█▄▄▄▄▄▄▄▄▄ ▐░█▄▄▄▄▄▄▄█░▌                                     
-    ▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌                                     
-    ▐░█▀▀▀▀█░█▀▀  ▀▀▀▀▀▀▀▀▀█░▌▐░█▀▀▀▀▀▀▀█░▌                                     
-    ▐░▌     ▐░▌            ▐░▌▐░▌       ▐░▌                                     
-    ▐░▌      ▐░▌  ▄▄▄▄▄▄▄▄▄█░▌▐░▌       ▐░▌                                     
-    ▐░▌       ▐░▌▐░░░░░░░░░░░▌▐░▌       ▐░▌                                     
-     ▀         ▀  ▀▀▀▀▀▀▀▀▀▀▀  ▀         ▀                                      
-                                                                                
-     ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄    ▄               ▄  ▄▄▄▄▄▄▄▄▄▄▄  ▄▄▄▄▄▄▄▄▄▄▄ 
-    ▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░▌  ▐░▌             ▐░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌
-    ▐░█▀▀▀▀▀▀▀▀▀ ▐░█▀▀▀▀▀▀▀█░▌▐░▌   ▐░▌           ▐░▌ ▐░█▀▀▀▀▀▀▀▀▀ ▐░█▀▀▀▀▀▀▀█░▌
-    ▐░▌          ▐░▌       ▐░▌▐░▌    ▐░▌         ▐░▌  ▐░▌          ▐░▌       ▐░▌
-    ▐░█▄▄▄▄▄▄▄▄▄ ▐░▌       ▐░▌▐░▌     ▐░▌       ▐░▌   ▐░█▄▄▄▄▄▄▄▄▄ ▐░█▄▄▄▄▄▄▄█░▌
-    ▐░░░░░░░░░░░▌▐░▌       ▐░▌▐░▌      ▐░▌     ▐░▌    ▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌
-     ▀▀▀▀▀▀▀▀▀█░▌▐░▌       ▐░▌▐░▌       ▐░▌   ▐░▌     ▐░█▀▀▀▀▀▀▀▀▀ ▐░█▀▀▀▀█░█▀▀ 
-              ▐░▌▐░▌       ▐░▌▐░▌        ▐░▌ ▐░▌      ▐░▌          ▐░▌     ▐░▌  
-     ▄▄▄▄▄▄▄▄▄█░▌▐░█▄▄▄▄▄▄▄█░▌▐░█▄▄▄▄▄▄▄▄▄▐░▐░▌       ▐░█▄▄▄▄▄▄▄▄▄ ▐░▌      ▐░▌ 
-    ▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░░░░░░░░░░░▌▐░▌        ▐░░░░░░░░░░░▌▐░▌       ▐░▌
-     ▀▀▀▀▀▀▀▀▀▀▀  ▀▀▀▀▀▀▀▀▀▀▀  ▀▀▀▀▀▀▀▀▀▀▀  ▀          ▀▀▀▀▀▀▀▀▀▀▀  ▀         ▀                                                                                                                                                                                                                    
-                        """)
+                           ███                       ███████████    █████████    █████████   ████ 
+                           ░░░                       ░░███░░░░░███  ███░░░░░███  ███░░░░░███ ░░███ 
+     █████ ████ ████████   ████  █████ █████  ██████  ░███    ░███ ░███    ░░░  ░███    ░███  ░███ 
+    ░░███ ░███ ░░███░░███ ░░███ ░░███ ░░███  ███░░███ ░██████████  ░░█████████  ░███████████  ░███ 
+     ░███ ░███  ░███ ░███  ░███  ░███  ░███ ░███████  ░███░░░░░███  ░░░░░░░░███ ░███░░░░░███  ░███ 
+     ░███ ░███  ░███ ░███  ░███  ░░███ ███  ░███░░░   ░███    ░███  ███    ░███ ░███    ░███  ░███ 
+     ░░████████ ████ █████ █████  ░░█████   ░░██████  █████   █████░░█████████  █████   █████ █████
+      ░░░░░░░░ ░░░░ ░░░░░ ░░░░░    ░░░░░     ░░░░░░  ░░░░░   ░░░░░  ░░░░░░░░░  ░░░░░   ░░░░░ ░░░░░ 
+             """)
     while True:
         print("1. Small e attack")
         print("2. Hastad broadcast attack")
@@ -179,6 +179,7 @@ if __name__ == "__main__":
     print('Server is ready')
     while True:
         try:
+            # connecting the client to the server and starting the configure function
             connectionSocket, address = serverSocket.accept()
             thread_main = threading.Thread(target=configure, args=(connectionSocket, address,))
             thread_main.start()
