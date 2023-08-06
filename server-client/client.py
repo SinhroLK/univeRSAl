@@ -7,7 +7,7 @@ from maths import hastad_unpadded, extended_gcd
 
 FORMAT = 'utf-8'
 HEADER = 100000
-serverPort = 5060
+serverPort = 5061
 serverName = socket.gethostbyname(socket.gethostname())
 username = ''
 stop = False

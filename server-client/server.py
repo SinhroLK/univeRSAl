@@ -8,7 +8,7 @@ from sentences import sentences
 # server configuration
 FORMAT = 'utf-8'
 HEADER = 100000
-serverPort = 5060
+serverPort = 5061
 serverName = socket.gethostbyname(socket.gethostname())
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serverSocket.bind((serverName, serverPort))
