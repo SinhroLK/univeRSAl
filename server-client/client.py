@@ -7,7 +7,7 @@ from maths import hastad_unpadded, extended_gcd
 
 FORMAT = 'utf-8'
 HEADER = 100000
-serverPort = 5061
+serverPort = 5060
 serverName = socket.gethostbyname(socket.gethostname())
 username = ''
 stop = False
@@ -102,18 +102,35 @@ def commonModulus(known: str) -> None:
 
 
 def solver() -> None:
-    while True:
-        rec = clientSocket.recv(HEADER).decode(FORMAT)
-        if int(rec.split(".")[0]) == 3:
-            smallE(rec)
-        elif 1 < int(rec.split(".")[0]) <= 20 and len(rec.split(".")) > 5:
-            hastad(rec)
-        elif len(rec.split(".")) == 5:
-            commonModulus(rec)
-        elif int(rec.split(".")[0]).bit_length() == int(rec.split(".")[1]).bit_length():
-            wiener(rec)
-        elif len(rec.split(".")) == 4:
-            sumOPrimes(rec)
+    try:
+        while True:
+            print("1. Send data request")
+            print("2. Quit")
+            msg = int(input("Choose an option "))
+            if msg == 1:
+                clientSocket.send("DataRequest".encode(FORMAT))
+                rec = clientSocket.recv(HEADER).decode(FORMAT)
+                if rec == "An error occurred":
+                    print(rec)
+                    raise Exception(rec)
+                elif int(rec.split(".")[0]) == 3:
+                    smallE(rec)
+                elif 1 < int(rec.split(".")[0]) <= 20 and len(rec.split(".")) > 5:
+                    hastad(rec)
+                elif len(rec.split(".")) == 5:
+                    commonModulus(rec)
+                elif int(rec.split(".")[0]).bit_length() == int(rec.split(".")[1]).bit_length():
+                    wiener(rec)
+                elif len(rec.split(".")) == 4:
+                    sumOPrimes(rec)
+            elif msg == 2:
+                print('Hope to see you again soon')
+                clientSocket.close()
+                break
+    except:
+        print("You left")
+
+
 
 
 

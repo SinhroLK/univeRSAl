@@ -8,11 +8,21 @@ from sentences import sentences
 # server configuration
 FORMAT = 'utf-8'
 HEADER = 100000
-serverPort = 5061
+serverPort = 5060
 serverName = socket.gethostbyname(socket.gethostname())
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serverSocket.bind((serverName, serverPort))
 serverSocket.listen()
+print(r"""                                          
+                           ███                       ███████████    █████████    █████████   ████ 
+                           ░░░                       ░░███░░░░░███  ███░░░░░███  ███░░░░░███ ░░███ 
+     █████ ████ ████████   ████  █████ █████  ██████  ░███    ░███ ░███    ░░░  ░███    ░███  ░███ 
+    ░░███ ░███ ░░███░░███ ░░███ ░░███ ░░███  ███░░███ ░██████████  ░░█████████  ░███████████  ░███ 
+     ░███ ░███  ░███ ░███  ░███  ░███  ░███ ░███████  ░███░░░░░███  ░░░░░░░░███ ░███░░░░░███  ░███ 
+     ░███ ░███  ░███ ░███  ░███  ░░███ ███  ░███░░░   ░███    ░███  ███    ░███ ░███    ░███  ░███ 
+     ░░████████ ████ █████ █████  ░░█████   ░░██████  █████   █████░░█████████  █████   █████ █████
+      ░░░░░░░░ ░░░░ ░░░░░ ░░░░░    ░░░░░     ░░░░░░  ░░░░░   ░░░░░  ░░░░░░░░░  ░░░░░   ░░░░░ ░░░░░ 
+             """)
 
 
 def smallE(conn: socket) -> None:
@@ -142,43 +152,35 @@ def sumOPrimes(conn: socket) -> None:
 
 def configure(connection: socket, addr: str) -> None:
     print(f'New connection at {addr}')
-    print(r"""                                          
-                           ███                       ███████████    █████████    █████████   ████ 
-                           ░░░                       ░░███░░░░░███  ███░░░░░███  ███░░░░░███ ░░███ 
-     █████ ████ ████████   ████  █████ █████  ██████  ░███    ░███ ░███    ░░░  ░███    ░███  ░███ 
-    ░░███ ░███ ░░███░░███ ░░███ ░░███ ░░███  ███░░███ ░██████████  ░░█████████  ░███████████  ░███ 
-     ░███ ░███  ░███ ░███  ░███  ░███  ░███ ░███████  ░███░░░░░███  ░░░░░░░░███ ░███░░░░░███  ░███ 
-     ░███ ░███  ░███ ░███  ░███  ░░███ ███  ░███░░░   ░███    ░███  ███    ░███ ░███    ░███  ░███ 
-     ░░████████ ████ █████ █████  ░░█████   ░░██████  █████   █████░░█████████  █████   █████ █████
-      ░░░░░░░░ ░░░░ ░░░░░ ░░░░░    ░░░░░     ░░░░░░  ░░░░░   ░░░░░  ░░░░░░░░░  ░░░░░   ░░░░░ ░░░░░ 
-             """)
-    while True:
-        print("1. Small e attack")
-        print("2. Hastad broadcast attack")
-        print("3. Common modulus attack")
-        print("4. Wiener attack")
-        print("5. Sum O Primes")
-        msg = input("Choose your desired configuration ")
-        # msg = random.randint(1, 5)
-        match msg:
-            case "1":
-                smallE(connection)
-            case "2":
-                hastad(connection)
-            case "3":
-                commonModulus(connection)
-            case "4":
-                wiener(connection)
-            case "5":
-                sumOPrimes(connection)
-            case _:
-                print("Unknown configuration, please choose an existing one")
+    try:
+        while True:
+            msg = connection.recv(HEADER).decode(FORMAT)
+            if msg == "DataRequest":
+                print("\nChoosing configuration")
+                msg = random.randint(1, 5)
+                match msg:
+                    case 1:
+                        smallE(connection)
+                    case 2:
+                        hastad(connection)
+                    case 3:
+                        commonModulus(connection)
+                    case 4:
+                        wiener(connection)
+                    case 5:
+                        sumOPrimes(connection)
+                    case _:
+                        print("Unknown configuration, please choose an existing one")
+            else:
+                connection.send("An error occurred".encode(FORMAT))
+    except:
+        print(f"User disconnected at {addr}")
 
 
 if __name__ == "__main__":
-    print('Server is ready')
     while True:
         try:
+
             # connecting the client to the server and starting the configure function
             connectionSocket, address = serverSocket.accept()
             thread_main = threading.Thread(target=configure, args=(connectionSocket, address,))
